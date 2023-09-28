@@ -205,7 +205,7 @@ def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('algorithm', type=str, choices=Algorithms, help="Which algorithm to run")
     arg_parser.add_argument('--timeout', type=int, default=None, help='Hard timeout per file')
-    arg_parser.add_argument('--location', type=str, default='.', help='Directory with SMT files')
+    arg_parser.add_argument('--location', type=str, default='.', help='SMT file or directory with SMT files')
     arg_parser.add_argument('--debug', type=lambda x: (str(x).lower() == 'true'), default=debug_mode.flag,
                             help="Whether to run the pipeline in debug mode")
     arg_parser.add_argument('--similarity_threshold', type=restricted_float, default=0.3,
