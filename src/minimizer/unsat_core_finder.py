@@ -65,7 +65,8 @@ class UnsatCoreFinder(Minimizer):
                 if matches:
                     # This must be a named assertion
                     name = matches.group(1)
-                    if name in unsat_core or (solver is SMTSolver.CVC4 and re.sub(r'@', '_at_', name) in unsat_core):
+                    cvc = solver is SMTSolver.CVC4 or solver is SMTSolver.CVC5
+                    if name in unsat_core or (cvc and re.sub(r'@', '_at_', name) in unsat_core):
                         unsat_core_axioms.append(cmd)
                     else:
                         to_be_deleted.append(cmd)

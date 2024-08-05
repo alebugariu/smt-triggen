@@ -10,18 +10,20 @@
 
 TIMEOUT_PER_RUN_SEC=600
 AXIOMS_REPO_DIR=$1
-MAIN_SCRIPT="$AXIOMS_REPO_DIR/src/frontend/cvc4.py"
-ENUM_INST=$3
-OPTIONS="--timeout $TIMEOUT_PER_RUN_SEC $ENUM_INST"
-OUTPUT=$2
+BENCHMARKS_DIR=$2
+VERSION=$3
+MAIN_SCRIPT="$AXIOMS_REPO_DIR/src/minimizer/main.py"
+PIPELINE="proof_ematching"
+SOLVER="cvc"$VERSION
+OPTIONS="--is_debug=false --solver=$SOLVER --enumerative=True --timeout $TIMEOUT_PER_RUN_SEC --location"
 
 function get_command() {
-	opts="$OPTIONS $1 $OUTPUT"
-	cmd="python $MAIN_SCRIPT $opts"
+	opts="$OPTIONS $1"
+	cmd="python $MAIN_SCRIPT $PIPELINE $opts"
 	echo $cmd
 }
 
-for dir in group_*; 
+for dir in $BENCHMARKS_DIR/group_*;
 do 
 	$(get_command $dir) & 
 	echo $! >> active_pids.txt; 
@@ -29,5 +31,5 @@ done;
 
 wait; 
 
-echo ">>> CVC4 processed all groups. <<<";
+echo ">>> $SOLVER (with enumerative instantiation) tried to generate proofs for all the files. <<<";
 rm -f active_pids.txt

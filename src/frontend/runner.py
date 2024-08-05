@@ -12,7 +12,7 @@ from os.path import join, isfile
 
 from sortedcontainers import SortedSet
 
-from src.frontend.cvc4 import run_benchmarks_via_cvc4
+from src.frontend.cvc import run_benchmarks_via_cvc
 from src.frontend.mbqi import run_benchmarks_via_mbqi
 from src.frontend.optset import Optset
 from src.frontend.test_runner import run_benchmarks
@@ -62,7 +62,7 @@ def main():
     report_o = run_benchmarks(all_files, opt)
     report_a = run_benchmarks_via_vampire(all_files, timeout, raise_exceptions)
     report_b = run_benchmarks_via_mbqi(all_files, timeout, raise_exceptions)
-    report_c = run_benchmarks_via_cvc4(all_files, timeout, raise_exceptions, True)
+    report_c = run_benchmarks_via_cvc(all_files, timeout, raise_exceptions, True)
 
     all_tests = SortedSet(report_o.keys()) | \
                 SortedSet(report_a.keys()) | \

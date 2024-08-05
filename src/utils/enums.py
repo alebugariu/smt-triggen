@@ -12,6 +12,7 @@ from enum import Enum
 class SMTSolver(Enum):
     Z3 = "z3"
     CVC4 = "cvc4"
+    CVC5 = "cvc5"
     VAMPIRE = "vampire"
 
     def __str__(self):

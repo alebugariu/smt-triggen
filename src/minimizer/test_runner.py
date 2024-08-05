@@ -14,14 +14,13 @@ from src.utils.enums import SMTSolver
 
 
 class TestRunner:
-
     DBG_PREFIX = "  TestRunner >> "
 
     # Static helper methods
     @classmethod
     def print_dbg(cls, msg, tabs=0):
         ttt = (tabs * "  ")
-        print(cls.DBG_PREFIX + ttt + msg.replace('\n', '\n'+ttt))
+        print(cls.DBG_PREFIX + ttt + msg.replace('\n', '\n' + ttt))
 
     def __init__(self, solver, seed=0, timeout=15, enum_inst=False):
         self.solver = solver
@@ -51,8 +50,8 @@ class TestRunner:
             if self.seed:
                 seed_options = ['sat.random_seed=%s' % self.seed, 'smt.random_seed=%s' % self.seed]
             timeout_options = ['%s:%d' % ('-t' if use_soft_timeout else '-T',
-                                         self.timeout * 1000 if use_soft_timeout else max(1, self.timeout))]
-        if self.solver == SMTSolver.CVC4:
+                                          self.timeout * 1000 if use_soft_timeout else max(1, self.timeout))]
+        if self.solver == SMTSolver.CVC4 or self.solver == SMTSolver.CVC5:
             if self.seed:
                 seed_options = ['--seed=%d' % self.seed, '--random-seed=%d' % self.seed]
             timeout_options = ['--tlimit=%d' % (self.timeout * 1000)]
@@ -82,7 +81,7 @@ class TestRunner:
 
         output = str(result.stdout)
         if result.stderr:
-            output += '\n'+str(result.stderr)
+            output += '\n' + str(result.stderr)
         output = output.replace('b\'', '').replace('\\n\'', '')
         if ignore_warnings:
             output = output.replace('unsupported\\n', '')
@@ -101,7 +100,8 @@ class TestRunner:
 
         if "error" in actual_status:
             raise SolverErrorException("  failed with status `%s`" % actual_status)
-        if self.solver is SMTSolver.CVC4 and "Error! Proofs not yet supported" in attachment[-2]:
+        if (self.solver is SMTSolver.CVC4 or self.solver is SMTSolver.CVC5) and \
+                "Error! Proofs not yet supported" in attachment[-2]:
             self.print_dbg("  failed with status `%s` %s" % (actual_status, attachment[-2]))
             return actual_status, []
 
@@ -135,7 +135,7 @@ class TestRunner:
 
         output = str(result.stdout)
         if result.stderr:
-            output += '\n'+str(result.stderr)
+            output += '\n' + str(result.stderr)
         output = output.replace('b\'', '').replace('\\n\'', '')
 
         output_lines = output.split('\\n')

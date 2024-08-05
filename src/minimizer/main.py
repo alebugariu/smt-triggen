@@ -56,7 +56,7 @@ def main():
     arg_parser.add_argument('--is_carantine', type=lambda x: (str(x).lower() == 'true'), default=False,
                             help="Whether the pipeline is run on previously carantined files")
     arg_parser.add_argument('--enumerative', type=bool, default=False,
-                            help='Use enumerative instantiation when E-matching saturates (for CVC4)')
+                            help='Use enumerative instantiation when E-matching saturates (for CVC4/cvc5)')
     args = arg_parser.parse_args()
 
     DEBUG_MODE = args.is_debug
@@ -71,6 +71,8 @@ def main():
         solver = SMTSolver(SMTSolver.Z3)
     elif args.solver == str(SMTSolver.CVC4):
         solver = SMTSolver(SMTSolver.CVC4)
+    elif args.solver == str(SMTSolver.CVC5):
+        solver = SMTSolver(SMTSolver.CVC5)
     elif args.solver == str(SMTSolver.VAMPIRE):
         solver = SMTSolver(SMTSolver.VAMPIRE)
     else:

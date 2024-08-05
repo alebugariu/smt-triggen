@@ -10,9 +10,11 @@
 
 TIMEOUT_PER_RUN_SEC=600
 AXIOMS_REPO_DIR=$1
+VERSION=$2
 MAIN_SCRIPT="$AXIOMS_REPO_DIR/src/minimizer/main.py"
 PIPELINE="unsat_core_ematching"
-OPTIONS="--is_debug=false --solver=cvc4 --enumerative=True --timeout $TIMEOUT_PER_RUN_SEC --location"
+SOLVER="cvc"$VERSION
+OPTIONS="--is_debug=false --solver=$SOLVER --enumerative=True --timeout $TIMEOUT_PER_RUN_SEC --location"
 
 function get_command() {
 	opts="$OPTIONS $1"
@@ -28,5 +30,5 @@ done;
 
 wait; 
 
-echo ">>> CVC4 (with enumerative instantiation) extracted the unsat core for all groups. <<<";
+echo ">>> $SOLVER (with enumerative instantiation) extracted the unsat core for all groups. <<<";
 rm -f active_pids.txt

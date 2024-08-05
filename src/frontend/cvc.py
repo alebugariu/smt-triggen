@@ -23,25 +23,26 @@ from src.utils.file import ensure_dir_structure
 from src.session import debug_mode
 
 
-class Cvc4Worker:
-    def __init__(self, cvc4: TestRunner, test_file_name: str):
-        self.cvc4 = cvc4
+class CvcWorker:
+    def __init__(self, cvc: TestRunner, test_file_name: str):
+        self.cvc = cvc
         self.test_file_name = test_file_name
         self.result = multiprocessing.Array('c', 10000)
 
     def run(self):
         try:
-            result, _ = self.cvc4.run_test(self.test_file_name)
+            result, _ = self.cvc.run_test(self.test_file_name)
             self.result.value = str(result).encode()
         except Exception as e:
-            print("$$$$$$$$$$ Cvc4Worker crashed: %s $$$$$$$$$$$" % str(e))
+            print("$$$$$$$$$$ %sWorker crashed: %s $$$$$$$$$$$" % (self.cvc.solver, str(e)))
             self.result.value = ("crash: %s" % str(e)).encode()
 
 
-def run_benchmarks_via_cvc4(tests: Iterator,
-                            timeout: int or None,
-                            raise_exceptions: bool,
-                            enum_inst: bool) -> Dict[str, Tuple[str, str]]:
+def run_benchmarks_via_cvc(tests: Iterator,
+                           version: int,
+                           timeout: int or None,
+                           raise_exceptions: bool,
+                           enum_inst: bool) -> Dict[str, Tuple[str, str]]:
 
     assert isinstance(tests, List) or isinstance(tests, Tuple) or isinstance(tests, Generator), \
         "run_benchmarks: argument tests should be Generator, List, or Tuple"
@@ -49,6 +50,8 @@ def run_benchmarks_via_cvc4(tests: Iterator,
     report = OrderedDict()
     time_info = OrderedDict()
     suite_start_time = time.time()
+
+    solver_name = 'CVC' + str(version)
 
     for test in tests:
         assert isfile(test), "tests must be existing SMT2 files"
@@ -61,10 +64,15 @@ def run_benchmarks_via_cvc4(tests: Iterator,
 
         start_time = time.perf_counter()
         try:
-            cvc4 = TestRunner(SMTSolver.CVC4, timeout=timeout, enum_inst=enum_inst)
+            solver = None
+            if version == 4:
+                solver = SMTSolver.CVC4
+            elif version == 5:
+                solver = SMTSolver.CVC5
+            cvc = TestRunner(solver, timeout=timeout, enum_inst=enum_inst)
 
             if timeout:
-                worker = Cvc4Worker(cvc4, test)
+                worker = CvcWorker(cvc, test)
                 p = multiprocessing.Process(target=worker.run)
 
                 p.start()
@@ -72,7 +80,7 @@ def run_benchmarks_via_cvc4(tests: Iterator,
 
                 if p.is_alive():
                     report[test] = "timeout (%ds)" % timeout
-                    msg = "%s: CVC4 timed out after %.3f seconds" % (test, timeout)
+                    msg = "%s: %s timed out after %.3f seconds" % (test, solver_name, timeout)
                     p.terminate()
                     p.join()
                     raise AxiomatizationTesterTimeout(msg)
@@ -80,14 +88,14 @@ def run_benchmarks_via_cvc4(tests: Iterator,
                 report[test] = worker.result.value.decode()
 
             else:
-                result = cvc4.run_test(test)
+                result = cvc.run_test(test)
                 report[test] = result
 
         except AxiomatizationTesterTimeout as e:
             print(str(e))
             report[test] = "timeout: %s" % str(e)
         except Exception as e:
-            print("CVC4 crashed: %s" % str(e))
+            print("%s crashed: %s" % str(solver_name, e))
             report[test] = "crash: %s" % str(e)
             if raise_exceptions or debug_mode.flag:
                 raise e
@@ -99,8 +107,8 @@ def run_benchmarks_via_cvc4(tests: Iterator,
     suite_end_time = time.time()
 
     print("=================================\n"
-          "===== CVC4 Results Summary ======\n"
-          "=================================")
+          "===== %s Results Summary ======\n"
+          "=================================" % solver_name)
 
     clean_report: Dict[str, Tuple[str, str]] = dict()
     for (test, outcome), runtime in zip(report.items(), time_info.values()):
@@ -131,6 +139,7 @@ def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('location', type=str, help='Directory with SMT files')
     arg_parser.add_argument('output', type=str, help='File for writing the results into (CSV)')
+    arg_parser.add_argument('--version', type=int, default=None, help='Major version (4 or 5)')
     arg_parser.add_argument('--timeout', type=int, default=None, help='Timeout for testing one file (sec)')
     arg_parser.add_argument('--debug', type=bool, default=False, help='Debug mode enables detailed output and persistent logging')
     arg_parser.add_argument('--enumerative', type=bool, default=False, help='Use enumerative instantiation when E-matching saturates')
@@ -141,9 +150,15 @@ def main():
     location = args.location
     results_file = args.output
     enum_inst = args.enumerative
+    version = args.version
 
     all_files = [join(location, f) for f in listdir(location) if isfile(join(location, f))
                  and f.endswith("smt2")]
+
+    if not (version == 4 or version == 5):
+        print('Invalid version')
+        arg_parser.print_help()
+        exit(1)
 
     if not args.timeout and len(all_files) < 2:
         timeout = None
@@ -155,7 +170,7 @@ def main():
     with open(results_file, mode='a') as file:
         file.write("Example, Outcome, Runtime (sec), Time limit\n")
 
-    report = run_benchmarks_via_cvc4(all_files, timeout, raise_exceptions, enum_inst)
+    report = run_benchmarks_via_cvc(all_files, version, timeout, raise_exceptions, enum_inst)
     csv_rows = ["%s,%s,%s" % (entry, ",".join(report[entry]), str(timeout)) for entry in report]
 
     with open(results_file, mode='a') as file:

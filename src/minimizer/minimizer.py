@@ -679,7 +679,7 @@ class Minimizer:
                                    It's useful to set this to False for performing multiple similar runs.
         :param with_unsat_core:    Whether to extract unsat core (may negatively affect the completeness of the solver)
         :param with_proof:         Whether to construct the proof
-        :param enum_inst:          Whether to use enumerative instantiation when E-matching saturates (for CVC4)
+        :param enum_inst:          Whether to use enumerative instantiation when E-matching saturates (for CVC4/cvc5)
         :param get_reason_unknown: Whether to ask the solver why the status is unknown
         :param quiet:              Whether to indicate success with a single character to STDOUT or report more info.
         :param progress_token:     If `quite`, which character to use.
@@ -708,8 +708,8 @@ class Minimizer:
 
         if solver is SMTSolver.VAMPIRE:
             self.all_commands = self.__vampire_commands()
-        elif solver is SMTSolver.CVC4:
-            self.all_commands = self.__cvc4_commands()
+        elif solver is SMTSolver.CVC4 or solver is SMTSolver.CVC5:
+            self.all_commands = self.__cvc_commands()
 
         actual_file_name = self.save_to_disk(new_suffix=new_suffix, accumulate=accumulate, quiet=True)
 
@@ -1356,11 +1356,11 @@ class Minimizer:
 
         return new_smt_commands
 
-    def __cvc4_commands(self):
+    def __cvc_commands(self):
 
         """
         This method creates SMT commands that are logically equivalent to [[self.all_commands]]
-        but they can be parsed by CVC4.
+        but they can be parsed by CVC4/cvc5.
 
         :return: A list of SMT commands that can be parsed by Vampire
         """
@@ -1368,10 +1368,10 @@ class Minimizer:
         new_smt_commands = []
 
         for smt_command in self.all_commands:
-            # CVC4 does not support 'mod' as an user-defined function
+            # CVC4/cvc5 does not support 'mod' as an user-defined function
             smt_command = re.sub(r'mod', 'mod_at_sharp_at_', smt_command)
 
-            # CVC4 does not support symbols starting with '@'
+            # CVC4/cvc5 does not support symbols starting with '@'
             smt_command = re.sub(r'@', '_at_', smt_command)
 
             new_smt_commands.append(smt_command)
