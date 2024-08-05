@@ -57,13 +57,13 @@ scripts/parallel-proof-mbqi.sh . smt-inputs/benchmarks/verifiers/gobra"
 Run CVC4 with enumerative instantation on a set of benchmarks (to generate unsatisfiability proofs):
 ```
 docker run -it aterga/smt-triggen /bin/bash -c "scripts/group.sh <path to the benchmarks folder>;
-scripts/parallel-proof-cvc4.sh . <path to the benchmarks folder>"
+scripts/parallel-proof-cvc.sh . <path to the benchmarks folder> 4"
 ```
 
 For example, the following command runs CVC4 with enumerative instantation on the Gobra benchmarks:
 ```
 docker run -it aterga/smt-triggen /bin/bash -c "scripts/group.sh smt-inputs/benchmarks/verifiers/gobra;
-scripts/parallel-proof-cvc4.sh . smt-inputs/benchmarks/verifiers/gobra"
+scripts/parallel-proof-cvc.sh . smt-inputs/benchmarks/verifiers/gobra 4"
 ```
 
 ### Running Vampire over the benchmarks

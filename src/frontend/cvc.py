@@ -139,7 +139,7 @@ def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('location', type=str, help='Directory with SMT files')
     arg_parser.add_argument('output', type=str, help='File for writing the results into (CSV)')
-    arg_parser.add_argument('--version', type=int, default=None, help='Major version (4 or 5)')
+    arg_parser.add_argument('--version', type=int, choices=[4, 5], default=None, help='Major version (4 or 5)')
     arg_parser.add_argument('--timeout', type=int, default=None, help='Timeout for testing one file (sec)')
     arg_parser.add_argument('--debug', type=bool, default=False, help='Debug mode enables detailed output and persistent logging')
     arg_parser.add_argument('--enumerative', type=bool, default=False, help='Use enumerative instantiation when E-matching saturates')
@@ -154,11 +154,6 @@ def main():
 
     all_files = [join(location, f) for f in listdir(location) if isfile(join(location, f))
                  and f.endswith("smt2")]
-
-    if not (version == 4 or version == 5):
-        print('Invalid version')
-        arg_parser.print_help()
-        exit(1)
 
     if not args.timeout and len(all_files) < 2:
         timeout = None
