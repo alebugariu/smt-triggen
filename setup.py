@@ -13,7 +13,7 @@ setup(name='axioms-explosion',
       description='Synthesizing triggering terms for E-matching',
       author='Ale & Arshavir',
       install_requires=[
-            'sklearn',
+            'scikit-learn',
             'sortedcontainers',
             'datasketch',
             'six',

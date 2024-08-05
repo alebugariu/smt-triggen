@@ -20,6 +20,12 @@ RUN cd /downloads && curl -L -O http://cvc4.cs.stanford.edu/downloads/builds/x86
 RUN mv /downloads/cvc4-1.6-x86_64-linux-opt /provers/cvc4
 RUN chmod +x /provers/cvc4
 
+# Install cvc5 [1.1.2]
+RUN cd /downloads && curl -L -O https://github.com/cvc5/cvc5/releases/download/cvc5-1.1.2/cvc5-Linux-static.zip
+RUN cd /downloads && unzip cvc5-Linux-static.zip
+RUN mv /downloads/cvc5-Linux-static /provers/cvc5
+RUN chmod +x /provers/cvc5
+
 # Install Vampire [4.4]
 RUN cd /downloads && curl -L -O https://vprover.github.io/bin/vampire_z3_rel_static_release_v4.4
 RUN mv /downloads/vampire_z3_rel_static_release_v4.4 /provers/vampire
