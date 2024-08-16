@@ -15,7 +15,7 @@ We provide a [Docker](https://www.docker.com/) container, which already includes
 ## Usage
 Download our Docker image:
 ```
-docker pull https://hub.docker.com/r/aterga/smt-triggen:latest
+docker pull aterga/smt-triggen:latest
 ```
 or build it from the [Dockerfile](/Dockerfile) provided in our repository (this takes ~1 min):
 ```
